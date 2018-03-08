@@ -11,6 +11,7 @@ var NQ = L.marker([40.821102,-73.915128]).bindPopup ('We Stay/ Nos Quedamos'). a
 
 //
 const lookupIndustry = function(Industry) {
+	console.log(Industry)
   switch(Industry) {
   case 'Secondhand Dealer - General':
     return {
@@ -85,6 +86,51 @@ $.getJSON('data/boundary.geojson', function(boundary) {
     }
   }).addTo(map);
 })
+
+$.getJSON('data/dots.geojson', function(dots) {
+	var dotsGeojson = L.geoJSON(dots,{
+		pointToLayer: function (feature, latlng) {
+			return L.circleMarker(latlng, {
+        // Stroke properties
+        color: '#cdcdcd',
+        opacity: 0.75,
+        weight: 1,
+
+        // Fill properties
+        fillColor: lookupIndustry(feature.properties.Industry).color,
+        fillOpacity: 0.75,
+        radius: 5
+      });
+		},
+		onEachFeature: function(feature, layer) {
+	   const description = lookupIndustry(feature.properties.Industry).description;
+
+	   layer.bindPopup(`${feature.properties.BusinessName}<br/>${description}`, {
+	     closeButton: false,
+	     minWidth: 60,
+	     offset: [0, -10]
+	   });
+
+	   layer.on('mouseover', function (e) {
+	     this.openPopup();
+
+	     e.target.setStyle({
+	       weight: 3,
+	       color: '#FFF',
+	     });
+
+	     if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+	         layer.bringToFront();
+	     }
+	   });
+	   layer.on('mouseout', function (e) {
+	     this.closePopup();
+	     dotsGeojson.resetStyle(e.target);
+		 })
+	 }
+	}).addTo(map);
+})
+
 //
 // $.getJSON('data/dots.geojson', function(dots) {
 //   L.geoJSON(dots, {
